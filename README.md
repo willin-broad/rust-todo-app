@@ -112,5 +112,5 @@ rust-todo-app/
 ## Troubleshooting
 
 - If you encounter errors about borrowing, ensure you are using Rust 2021 edition or later.
-- If you get errors about missing dependencies, run `cargo build` to fetch them.
+- If you get errors about missing dependencies, run `cargo build` first to fetch them.
 - If you want to reset your todo list, delete the `data/todos.json` file.
