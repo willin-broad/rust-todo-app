@@ -1,7 +1,15 @@
 [package]
 name = "rust-todo-app"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "todo"
+path = "src/main.rs"
+
+[lib]
+name = "rust_todo_app"
+path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
