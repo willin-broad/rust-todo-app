@@ -17,8 +17,10 @@ pub fn load_todos() -> Result<TodoList, Box<dyn std::error::Error>> {
             if contents.trim().is_empty() {
                 Ok(TodoList::new())
             } else {
-                let todo_list: TodoList = serde_json::from_str(&contents)?;
-                Ok(todo_list)
+               let mut todo_list: TodoList = serde_json::from_str(&contents)?;
+               let max_id = todo_list.todos.iter().map(|t|t.id).max().unwrap_or(0);
+               todo_list.next_id= max_id +1;
+               Ok(todo_list)
             }
         }
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
