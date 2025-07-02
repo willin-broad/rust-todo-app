@@ -7,7 +7,7 @@ const DATA_FILE: &str = "data/todos.json";
 
 pub fn load_todos() -> Result<TodoList, Box<dyn std::error::Error>> {
     // Create data directory if it doesn't exist
-    if let Some(parent) = Path::new(DATA_FILE).parent() {
+    if let Some(parent) = std::path::Path::new(DATA_FILE).parent() {
         fs::create_dir_all(parent)?;
     }
 
@@ -17,11 +17,21 @@ pub fn load_todos() -> Result<TodoList, Box<dyn std::error::Error>> {
             if contents.trim().is_empty() {
                 Ok(TodoList::new())
             } else {
-                let mut todo_list: TodoList = serde_json::from_str(&contents)?;
-                // Always recalculate next_id based on the highest current ID
-                let max_id = todo_list.todos.iter().map(|t| t.id).max().unwrap_or(0);
-                todo_list.next_id = max_id.saturating_add(1);
-                Ok(todo_list)
+                match serde_json::from_str::<TodoList>(&contents) {
+                    Ok(mut todo_list) => {
+                        // Always recalculate next_id based on the highest current ID
+                        let max_id = todo_list.todos.iter().map(|t| t.id).max().unwrap_or(0);
+                        todo_list.next_id = max_id.saturating_add(1);
+                        Ok(todo_list)
+                    }
+                    Err(e) => {
+                        eprintln!("Warning: Failed to parse todo file ({}). Starting with an empty todo list. The file may be corrupted.", e);
+                            
+                            /*  Optionally, 
+                                you could back up the corrupted file here */
+                        Ok(TodoList::new())
+                    }
+                }
             }
         }
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
