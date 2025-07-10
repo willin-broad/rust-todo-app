@@ -47,6 +47,12 @@ enum Commands {
         /// The ID of the task to delete
         id: usize,
     },
+    ///export todos to file
+    Export {
+        /// output file path
+        #[arg(short, long, default_value = "todos.csv")]
+        output: String,
+    },
 }
 
 fn main() {
@@ -68,6 +74,7 @@ fn main() {
         Commands::Complete { id } => complete_todo(&mut todo_list, id),
         Commands::Uncomplete { id } => uncomplete_todo(&mut todo_list, id),
         Commands::Delete { id } => delete_todo(&mut todo_list, id),
+        Commands::Export { output } => export_todos(&todo_list, &output),
     };
 
     // Handle the result
@@ -182,4 +189,25 @@ fn delete_todo(
         }
         None => Err(format!("Todo with ID {} not found.", id).into()),
     }
+}
+fn export_todos(
+    todo_list: &todo::TodoList,
+    output: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+   let mut wtr = csv::Writer::from_path(output)?;
+   wtr.write_record(&["ID", "Title", "completed","created_at", "Completed At"])?;
+
+    for todo in todo_list.list_todos() {
+        wtr.write_record(&[
+            todo.id.to_string(),
+            todo.title.clone(),
+            todo.completed.to_string(),
+            todo.completed_at.map(|dt|dt.to_rfc3339()).unwrap_or_default(),
+            todo.completed_at.map(|dt| dt.to_rfc3339()).unwrap_or_default(),
+
+        ])?;
+    }
+    wtr.flush()?;
+    println!("Todos exported to {}", output);
+    Ok(())
 }
